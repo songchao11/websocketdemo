@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script>
+        window.addEventListener("load", function (evt) {
+            var output = document.getElementById("message");
+            var ws;
+            var print = function (message) {
+                console.log(message)
+                var d = document.createElement("div");
+                d.innerHTML = message;
+                output.appendChild(d);
+            };
+            document.getElementById("open").onclick = function (evt) {
+                var username = document.getElementById("username").value;
+                console.log(username)
+                if (ws) {
+                    alert("错误")
+                    return false;
+                }
+                var registerData = {
+                    "connKey": username
+                }
+                var wsUrl = "ws://localhost:8080/api/websocket?param="+JSON.stringify(registerData);
+                ws = new WebSocket(wsUrl);
+                ws.onopen = function (evt) {
+                    alert(username + "连接成功!")
+                }
+                ws.onclose = function (evt) {
+                    ws = null;
+                    alert("断开连接")
+                }
+                ws.onmessage = function (evt) {
+                    console.log(evt)
+                    print(evt.data);
+                }
+                ws.onerror = function (evt) {
+                }
+                return false;
+            };
+            document.getElementById("send").onclick = function (evt) {
+                if (!ws) {
+                    return false;
+                }
+                var msg = document.getElementById("say").value;
+                var sendData = {"msg": msg};
+                ws.send(JSON.stringify(sendData));
+                document.getElementById("say").value = "";
+                return false;
+            };
+            document.getElementById("close").onclick = function (evt) {
+                if (!ws) {
+                    return false;
+                }
+                ws.close();
+                return false;
+            };
+        });
+    </script>
+</head>
+<body>
+<table>
+    <tr>
+        <td valign="top" width="50%">
+            <div style="border: 1px solid red; width: 300px;height: 300px" id="message">
+            </div>
+            <form>
+                <input type="text" id="username"placeholder="username">
+                <button id="open">OpenWebSocket</button>
+                <button id="close">CloseWebSocket</button>
+                <p>
+                    <input id="say" type="text" placeholder="请输入">
+                    <button id="send">Send</button>
+                </p>
+            </form>
+        </td>
+        <td valign="top" width="50%">
+            <div id="output"></div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
